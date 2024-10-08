@@ -20,7 +20,7 @@
       "utils/*": ["./src/utils/*"],
       "observer": ["./src/observer/index.ts"],
       "socketIO": ["./src/socket/index.ts"],
-      "hooks/*": ["./src/hooks/*"],
+      "hooks/*": ["./src/hooks/*"]
     },
     "sourceMap": true,
     "target": "ES6"

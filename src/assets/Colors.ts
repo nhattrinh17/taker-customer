@@ -1,0 +1,18 @@
+export const Colors = {
+  red: '#B92628',
+  mainDisable: '#f3f3f3',
+  main: '#00B14F',
+  white: '#FFFFFF',
+  black: '#000000',
+  gallery: '#EEEEEE',
+  border: '#F2F2F2',
+  textPrimary: '#000000',
+  textSecondary: '#5A5A5A',
+  mainBackground: '#CCEFDC',
+  lavenderBlush: '#FFE6ED',
+  cerulean: '#00AFE6',
+  transparent: 'transparent',
+  flamingo: '#F55538',
+  seaShell: '#F1F1F1',
+  nobel: '#B6B6B6',
+}

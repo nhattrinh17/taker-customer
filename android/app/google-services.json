@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "633728853053",
+    "project_id": "taker-1fd8d",
+    "storage_bucket": "taker-1fd8d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:633728853053:android:0f2093fa9251e3ad653654",
+        "android_client_info": {
+          "package_name": "com.taker.customer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxpA0rxoj1i44PqRPncAJ51Zp2Pgofon8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

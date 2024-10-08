@@ -1,0 +1,8 @@
+node_modules/**
+babel.config.js
+metro.config.js
+__tests__/**
+react-native.config.js
+jsconfig.json
+.eslintrc.js
+

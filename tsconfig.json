@@ -1,0 +1,28 @@
+{
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "jsx": "react",
+    "module": "es6",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      // "src/*" : ["./src/*"],// alias similar to defined in .babelrc
+      "assets/*": ["./src/assets/*"],
+      "navigation/*": ["./src/navigation/*"],
+      "modules/*": ["./src/modules/*"],
+      "components/*": ["./src/components/*"],
+      "state/*": ["./src/states/*"],
+      "services/*": ["./src/services/*"],
+      "utils/*": ["./src/utils/*"],
+      "observer": ["./src/observer/index.ts"],
+      "socketIO": ["./src/socket/index.ts"],
+      "hooks/*": ["./src/hooks/*"],
+    },
+    "sourceMap": true,
+    "target": "ES6"
+  }
+}

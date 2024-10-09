@@ -1,25 +1,16 @@
-import {Colors} from 'assets/Colors'
-import {Fonts} from 'assets/Fonts'
-import {Icons} from 'assets/icons'
-import CommonButton from 'components/Button'
-import CommonText from 'components/CommonText'
-import Header from 'components/Header'
-import {navigate} from 'navigation/utils/navigationUtils'
-import React, {useState} from 'react'
-import {
-  StyleSheet,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Platform,
-} from 'react-native'
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view'
-import {
-  useCreateAccount,
-  useForgotPassword,
-  useVerifyPhoneNumber,
-} from 'services/src/auth'
-import {appStore} from 'state/app'
+import { Colors } from 'assets/Colors';
+import { Fonts } from 'assets/Fonts';
+import { Icons } from 'assets/icons';
+import CommonButton from 'components/Button';
+import CommonText from 'components/CommonText';
+import Header from 'components/Header';
+import { navigate } from 'navigation/utils/navigationUtils';
+import React, { useState } from 'react';
+import { StyleSheet, View, TextInput, TouchableOpacity, Platform } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useCreateAccount, useForgotPassword, useVerifyPhoneNumber } from 'services/src/auth';
+import { appStore } from 'state/app';
+import CheckBox from 'react-native-check-box';
 
 const styles = StyleSheet.create({
   container: {
@@ -58,82 +49,81 @@ const styles = StyleSheet.create({
   btContinue: {
     marginTop: 20,
   },
-})
+  boxPolicy: {
+    paddingTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  textPolicy: {
+    fontSize: Fonts.fontSize[16],
+  },
+});
 
 const Phone = () => {
-  const setLoading = appStore(state => state.setLoading)
-  const {trigger} = useVerifyPhoneNumber()
-  const {triggerCreateAccount} = useCreateAccount()
-  const {triggerForgotPassword} = useForgotPassword()
-  const [phone, setPhone] = useState<string>('')
+  const setLoading = appStore(state => state.setLoading);
+  const { trigger } = useVerifyPhoneNumber();
+  const { triggerCreateAccount } = useCreateAccount();
+  const { triggerForgotPassword } = useForgotPassword();
+  const [phone, setPhone] = useState<string>('');
+  const [confirmPolicy, setConfirmPolicy] = useState(false);
 
   const isValidPhoneNumber = (phone: string) => {
-    const vnPhoneRegex = /^(0|\\+84)[1-9][0-9]{8}$/
-    return vnPhoneRegex.test(phone)
-  }
+    const vnPhoneRegex = /^(0|\\+84)[1-9][0-9]{8}$/;
+    return vnPhoneRegex.test(phone);
+  };
 
   const handlePhoneNumberChange = (value: string) => {
-    setPhone(value)
-  }
+    setPhone(value);
+  };
 
   const clearPhoneNumber = () => {
-    setPhone('')
-  }
+    setPhone('');
+  };
 
   const handleContinuePress = async () => {
     try {
-      setLoading(true)
-      const response = await trigger({phone})
-      if (response.type !== 'success') return
+      setLoading(true);
+      const response = await trigger({ phone });
+      if (response.type !== 'success') return;
       if (!response?.data?.isExisted) {
-        const responseCreate = await triggerCreateAccount({phone})
+        const responseCreate = await triggerCreateAccount({ phone });
         if (responseCreate.type === 'success') {
           navigate('Otp', {
             phone,
             userId: responseCreate?.data?.userId,
             isForget: false,
-          })
+          });
         }
       } else {
         if (response?.data?.fullName === null) {
-          const responsePass = await triggerForgotPassword({phone})
+          const responsePass = await triggerForgotPassword({ phone });
           if (responsePass?.type === 'success') {
             navigate('Otp', {
               phone,
               userId: responsePass.data.userId,
               isForget: false,
-            })
+            });
           }
         } else {
-          navigate('LoginPassword', {phone})
+          navigate('LoginPassword', { phone });
         }
       }
     } catch (err) {
-      console.log('Error call ===>', err)
+      console.log('Error call ===>', err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
       <Header />
-      <KeyboardAwareScrollView
-        keyboardShouldPersistTaps="handled"
-        enableOnAndroid={false}
-        enableAutomaticScroll={Platform.OS === 'ios'}
-        contentContainerStyle={styles.container}>
+      <KeyboardAwareScrollView keyboardShouldPersistTaps="handled" enableOnAndroid={false} enableAutomaticScroll={Platform.OS === 'ios'} contentContainerStyle={styles.container}>
         <View style={styles.content}>
           <CommonText styles={styles.desc} text="Số điện thoại" />
           <View style={styles.wrapperInput}>
-            <TextInput
-              allowFontScaling={false}
-              autoFocus={true}
-              keyboardType="decimal-pad"
-              value={phone}
-              onChangeText={handlePhoneNumberChange}
-              style={styles.input}
-            />
+            <TextInput allowFontScaling={false} autoFocus={true} keyboardType="decimal-pad" value={phone} onChangeText={handlePhoneNumberChange} style={styles.input} />
 
             {phone !== '' && (
               <TouchableOpacity onPress={clearPhoneNumber}>
@@ -141,16 +131,25 @@ const Phone = () => {
               </TouchableOpacity>
             )}
           </View>
-          <CommonButton
-            isDisable={isValidPhoneNumber(phone) ? false : true}
-            text="Tiếp tục"
-            onPress={handleContinuePress}
-            buttonStyles={styles.btContinue}
-          />
+          <View style={styles.boxPolicy}>
+            <CheckBox
+              //
+              checkBoxColor={Colors.main}
+              style={{ width: 20, height: 20, marginRight: 12 }}
+              onClick={() => setConfirmPolicy(pre => !pre)}
+              isChecked={confirmPolicy}
+              leftText={'CheckBox'}
+            />
+            <CommonText text="Tôi đồng ý chấp nhận " styles={styles.textPolicy} />
+            <TouchableOpacity onPress={() => navigate('CommonWebView', { title: 'Điều khoản và dịch vụ', url: 'https://taker.vn/chinh-sach-bao-mat-va-dieu-kien-su-dung/' })}>
+              <CommonText text="điều khoản, dịch vụ" styles={{ ...styles.textPolicy, color: 'blue', textDecorationLine: 'underline' }} />
+            </TouchableOpacity>
+          </View>
+          <CommonButton isDisable={isValidPhoneNumber(phone) && confirmPolicy ? false : true} text="Tiếp tục" onPress={handleContinuePress} buttonStyles={styles.btContinue} />
         </View>
       </KeyboardAwareScrollView>
     </View>
-  )
-}
+  );
+};
 
-export default Phone
+export default Phone;

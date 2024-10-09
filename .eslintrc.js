@@ -26,16 +26,13 @@ module.exports = {
     'react/jsx-filename-extension': [1, { extensions: ['.tsx'] }],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-unused-vars': [
-      'error',
-      { argsIgnorePattern: '^_', ignoreRestSiblings: true },
-    ],
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', ignoreRestSiblings: true }],
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
     'no-use-before-define': 'off',
     // '@typescript-eslint/no-use-before-define': ['error'],
     '@typescript-eslint/ban-ts-comment': 'off',
-    'semi': [2, 'never'],
+    semi: [2, 'never'],
     'prettier/prettier': [
       'error',
       {
@@ -45,7 +42,7 @@ module.exports = {
       },
     ],
   },
-  
+
   settings: {
     'import/resolver': {
       node: {

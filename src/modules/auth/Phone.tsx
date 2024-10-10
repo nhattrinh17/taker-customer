@@ -50,13 +50,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   boxPolicy: {
-    paddingTop: 10,
+    paddingTop: 12,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'flex-start',
   },
   textPolicy: {
-    fontSize: Fonts.fontSize[16],
+    fontSize: Fonts.fontSize[15],
   },
 });
 
@@ -135,7 +135,7 @@ const Phone = () => {
             <CheckBox
               //
               checkBoxColor={Colors.main}
-              style={{ width: 20, height: 20, marginRight: 12 }}
+              style={{ width: 16, height: 16, marginRight: 12, marginTop: -2 }}
               onClick={() => setConfirmPolicy(pre => !pre)}
               isChecked={confirmPolicy}
               leftText={'CheckBox'}

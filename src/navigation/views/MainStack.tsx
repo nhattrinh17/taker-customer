@@ -1,58 +1,59 @@
-import {createNativeStackNavigator} from '@react-navigation/native-stack'
-import {RootNavigatorParamList} from 'navigation/typings'
-import React, {useEffect} from 'react'
-import BottomStack from './BottomStack'
-import HomePageStack from './HomeStack'
-import ProfileStack from './ProfileStack'
-import RequestServeStack from './RequestServeStack'
-import Geolocation from '@react-native-community/geolocation'
-import Schedule from 'modules/requestServe/views/Schedule'
-import {useGetProfile} from 'services/src/profile'
-import {userStore} from 'state/user'
-import ChangePassword from 'modules/profile/ChangePassword'
-import Referral from 'modules/profile/Referral'
-import Support from 'modules/profile/Support'
-import Wallet from 'modules/profile/Wallet'
-import Infomation from 'modules/profile/Infomation'
-import Privacy from 'modules/profile/Privacy'
-import AccountSetting from 'modules/profile/AccountSetting'
-import CommonWebView from 'components/CommonWebView'
-import {userInfo} from 'state/user/typings'
-import {StatusBar} from 'react-native'
-import {Colors} from 'assets/Colors'
-import Deposit from 'modules/wallet/Deposit'
-import Withdraw from 'modules/wallet/Withdraw'
-import Camera from 'components/Camera'
-import useFirebaseNotifications from 'hooks/notificationsPermission'
-import DetailOrderScreen from 'modules/activity/DetailOrder'
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { RootNavigatorParamList } from 'navigation/typings';
+import React, { useEffect } from 'react';
+import BottomStack from './BottomStack';
+import HomePageStack from './HomeStack';
+import ProfileStack from './ProfileStack';
+import RequestServeStack from './RequestServeStack';
+import Geolocation from '@react-native-community/geolocation';
+import Schedule from 'modules/requestServe/views/Schedule';
+import { useGetProfile } from 'services/src/profile';
+import { userStore } from 'state/user';
+import ChangePassword from 'modules/profile/ChangePassword';
+import Referral from 'modules/profile/Referral';
+import Support from 'modules/profile/Support';
+import Wallet from 'modules/profile/Wallet';
+import Infomation from 'modules/profile/Infomation';
+import Privacy from 'modules/profile/Privacy';
+import AccountSetting from 'modules/profile/AccountSetting';
+import CommonWebView from 'components/CommonWebView';
+import { userInfo } from 'state/user/typings';
+import { StatusBar } from 'react-native';
+import { Colors } from 'assets/Colors';
+import Deposit from 'modules/wallet/Deposit';
+import Withdraw from 'modules/wallet/Withdraw';
+import Camera from 'components/Camera';
+import useFirebaseNotifications from 'hooks/notificationsPermission';
+import DetailOrderScreen from 'modules/activity/DetailOrder';
 
-const Stack = createNativeStackNavigator<RootNavigatorParamList>()
+const Stack = createNativeStackNavigator<RootNavigatorParamList>();
 
 const MainStack = () => {
-  const {requestUserPermission} = useFirebaseNotifications()
-  const setUser = userStore(state => state.setUser)
-  const user = userStore(state => state.user)
-  const {triggerGetProfile} = useGetProfile()
+  const { requestUserPermission } = useFirebaseNotifications();
+  const setUser = userStore(state => state.setUser);
+  const user = userStore(state => state.user);
+  const { triggerGetProfile } = useGetProfile();
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await triggerGetProfile()
+        const response = await triggerGetProfile();
         if (response?.data) {
           const newUser: userInfo = {
             ...user,
             fullName: response.data.fullName,
             avatar: response.data.avatar,
             phone: response.data.phone,
-          }
-          setUser(newUser)
+            newUser: response.data.newUser,
+          };
+          setUser(newUser);
         }
       } catch (err) {
-        console.error('Error fetching profile:', err)
+        console.error('Error fetching profile:', err);
       }
-    }
-    fetchProfile()
-  }, [triggerGetProfile])
+    };
+    fetchProfile();
+  }, [triggerGetProfile]);
 
   const getCurrentLocation = async () => {
     try {
@@ -61,26 +62,20 @@ const MainStack = () => {
         authorizationLevel: 'whenInUse',
         locationProvider: 'auto',
         enableBackgroundLocationUpdates: true,
-      })
+      });
     } catch (err) {
-      console.log('Error get location ===>', err)
+      console.log('Error get location ===>', err);
     }
-  }
+  };
   useEffect(() => {
-    requestUserPermission()
-    getCurrentLocation()
-  }, [])
+    requestUserPermission();
+    getCurrentLocation();
+  }, []);
 
   return (
     <>
-      <StatusBar
-        translucent={true}
-        barStyle={'dark-content'}
-        backgroundColor={Colors.transparent}
-      />
-      <Stack.Navigator
-        screenOptions={{headerShown: false}}
-        initialRouteName="BottomStack">
+      <StatusBar translucent={true} barStyle={'dark-content'} backgroundColor={Colors.transparent} />
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="BottomStack">
         <Stack.Screen name="BottomStack" component={BottomStack} />
         <Stack.Screen name="RequestServeStack" component={RequestServeStack} />
         <Stack.Screen name="HomePageStack" component={HomePageStack} />
@@ -100,7 +95,7 @@ const MainStack = () => {
         <Stack.Screen name="DetailOrder" component={DetailOrderScreen} />
       </Stack.Navigator>
     </>
-  )
-}
+  );
+};
 
-export default MainStack
+export default MainStack;

@@ -1,51 +1,36 @@
-import React, {useEffect, useRef, useState} from 'react'
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
-  Animated,
-  NativeEventEmitter,
-} from 'react-native'
-import CommonText from 'components/CommonText'
-import {Colors} from 'assets/Colors'
-import {Fonts} from 'assets/Fonts'
-import Header from 'components/Header'
-import {RouteProp, useIsFocused} from '@react-navigation/native'
-import {RootNavigatorParamList} from 'navigation/typings'
-import {formatCurrency, totalPrice, totalSalePrice} from '../utils'
-import {Icons} from 'assets/icons'
-import {payments, showMessageError} from 'utils/index'
-import {navigate} from 'navigation/utils/navigationUtils'
-import CommonButton from 'components/Button'
-import {
-  useCancelTrip,
-  useCreateSearchHistory,
-  useCreateTrip,
-  useGetPaymentStatus,
-} from 'services/src/serveRequest/serveService'
-import {appStore} from 'state/app'
-import {ParamsCreateTrip, ResponseCreateTrip} from 'services/src/typings'
-import {userStore} from 'state/user'
-import {serveRequestStore} from 'state/serveRequest/serveRequestStore'
-import {omit} from 'lodash'
-import {SocketEvents, SocketService} from 'socketIO'
-import {EventBus, EventBusType} from 'observer'
-import {useGetBalance} from 'services/src/profile'
-import dayjs from 'dayjs'
+import React, { useEffect, useRef, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated, NativeEventEmitter } from 'react-native';
+import CommonText from 'components/CommonText';
+import { Colors } from 'assets/Colors';
+import { Fonts } from 'assets/Fonts';
+import Header from 'components/Header';
+import { RouteProp, useIsFocused } from '@react-navigation/native';
+import { RootNavigatorParamList } from 'navigation/typings';
+import { formatCurrency, totalPrice, totalSalePrice } from '../utils';
+import { Icons } from 'assets/icons';
+import { payments, showMessageError } from 'utils/index';
+import { navigate } from 'navigation/utils/navigationUtils';
+import CommonButton from 'components/Button';
+import { useCancelTrip, useCreateSearchHistory, useCreateTrip, useGetPaymentStatus } from 'services/src/serveRequest/serveService';
+import { appStore } from 'state/app';
+import { ParamsCreateTrip, ResponseCreateTrip } from 'services/src/typings';
+import { userStore } from 'state/user';
+import { serveRequestStore } from 'state/serveRequest/serveRequestStore';
+import { omit } from 'lodash';
+import { SocketEvents, SocketService } from 'socketIO';
+import { EventBus, EventBusType } from 'observer';
+import { useGetBalance } from 'services/src/profile';
+import dayjs from 'dayjs';
 
-import VnpayMerchant, {
-  VnpayMerchantModule,
-} from 'src/lib/react-native-vnpay-merchant'
-import ModalSuccess from 'components/ModalSuccess'
-import PopupFailedPayment from 'components/PopupFailedPayment'
-import {ActionSheetRef} from 'react-native-actions-sheet'
-import {reasonsCancel} from '../constants'
+import VnpayMerchant, { VnpayMerchantModule } from 'src/lib/react-native-vnpay-merchant';
+import ModalSuccess from 'components/ModalSuccess';
+import PopupFailedPayment from 'components/PopupFailedPayment';
+import { ActionSheetRef } from 'react-native-actions-sheet';
+import { reasonsCancel } from '../constants';
 
-const eventEmitter = new NativeEventEmitter(VnpayMerchantModule)
+const eventEmitter = new NativeEventEmitter(VnpayMerchantModule);
 
-let NUMBER_RETRY = 10
+let NUMBER_RETRY = 10;
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -240,86 +225,73 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontSize: Fonts.fontSize[12],
   },
-})
+});
 
 interface Props {
-  route: RouteProp<RootNavigatorParamList, 'OrderInformation'>
+  route: RouteProp<RootNavigatorParamList, 'OrderInformation'>;
 }
 
-const InformationOrder = ({route}: Props) => {
-  const {services} = route?.params
-  const {triggerGetBalance, balance} = useGetBalance()
-  const {triggerGetPaymentStatus} = useGetPaymentStatus()
-  const {triggerCancelTrip} = useCancelTrip()
-  const {triggerCreateTrip} = useCreateTrip()
-  const isFocused = useIsFocused()
-  const socketService = SocketService.getInstance()
-  const {triggerCreateHistory} = useCreateSearchHistory()
-  const customerId = userStore(state => state.user?.id)
-  const {setLoading} = appStore(state => state)
-  const actionSheetFailedPaymentRef = useRef<ActionSheetRef>(null)
+const InformationOrder = ({ route }: Props) => {
+  const { services } = route?.params;
+  const { triggerGetBalance, balance } = useGetBalance();
+  const { triggerGetPaymentStatus } = useGetPaymentStatus();
+  const { triggerCancelTrip } = useCancelTrip();
+  const { triggerCreateTrip } = useCreateTrip();
+  const isFocused = useIsFocused();
+  const socketService = SocketService.getInstance();
+  const { triggerCreateHistory } = useCreateSearchHistory();
+  const { user: customer, setUser } = userStore(state => state);
+  const { setLoading } = appStore(state => state);
+  const actionSheetFailedPaymentRef = useRef<ActionSheetRef>(null);
 
-  const {latitude, longitude, updateTripID, note, address, name, schedule} =
-    serveRequestStore(state => state)
-  const [isReload, setIsReload] = useState<boolean>(false)
-  const [typePayment, setTypePayment] = useState<number>(3)
-  const [showModalSuccess, setShowModalSuccess] = useState(false)
-  const isScheduleTime = schedule
-  const [loadingButton, setLoadingButton] = useState(false)
+  const { latitude, longitude, updateTripID, note, address, name, schedule } = serveRequestStore(state => state);
+  const [isReload, setIsReload] = useState<boolean>(false);
+  const [typePayment, setTypePayment] = useState<number>(3);
+  const [showModalSuccess, setShowModalSuccess] = useState(false);
+  const isScheduleTime = schedule;
+  const [loadingButton, setLoadingButton] = useState(false);
 
   const [checkPaymentAppCallApp, setCheckPaymentAppCallApp] = useState<{
-    isCallApp: boolean
-    tripId: string
-    paymentUrl: string
-    response: ResponseCreateTrip | null
+    isCallApp: boolean;
+    tripId: string;
+    paymentUrl: string;
+    response: ResponseCreateTrip | null;
   }>({
     isCallApp: false,
     tripId: '',
     paymentUrl: '',
     response: null,
-  })
+  });
 
-  const total = totalPrice(services)
-  const sales = totalSalePrice(services)
-  const pay = total - sales
+  const total = totalPrice(services);
+  const sales = totalSalePrice(services);
+  const pay = total - sales;
 
-  const rotation = useRef(new Animated.Value(0)).current
+  const rotation = useRef(new Animated.Value(0)).current;
 
   const rotateInterpolation = rotation.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
-  })
+  });
 
   const renderInformation = () => {
     return (
       <View style={styles.wrapperTopContent}>
         <View style={styles.rowTitle}>
           <CommonText text="Loại" styles={styles.desc} />
-          <CommonText
-            text="Số lượng"
-            styles={{...styles.desc, ...styles.viewItemCenter}}
-          />
-          <CommonText
-            text="Đơn giá"
-            styles={{...styles.desc, ...styles.viewItemRight}}
-          />
+          <CommonText text="Số lượng" styles={{ ...styles.desc, ...styles.viewItemCenter }} />
+          <CommonText text="Đơn giá" styles={{ ...styles.desc, ...styles.viewItemRight }} />
         </View>
         {services?.map((item, index) => (
-          <View style={{...styles.rowTitle, ...styles.mb4}} key={index}>
+          <View style={{ ...styles.rowTitle, ...styles.mb4 }} key={index}>
             <CommonText text={item?.name ?? ''} styles={styles.value} />
-            <CommonText
-              text={`${item?.quantity}`}
-              styles={{...styles.value, ...styles.viewItemCenter}}
-            />
-            <CommonText
-              text={`${formatCurrency(item?.price)}đ`}
-              styles={{...styles.value, ...styles.viewItemRight}}
-            />
+            <CommonText text={`${item?.quantity}`} styles={{ ...styles.value, ...styles.viewItemCenter }} />
+            <CommonText text={`${formatCurrency(item?.price)}đ`} styles={{ ...styles.value, ...styles.viewItemRight }} />
           </View>
         ))}
       </View>
-    )
-  }
+    );
+  };
 
   const renderPrice = () => {
     return (
@@ -330,26 +302,17 @@ const InformationOrder = ({route}: Props) => {
         </View>
 
         <View style={styles.rowItemPrice}>
-          <CommonText
-            text="Giảm giá"
-            styles={{...styles.textHolder, ...styles.mgV4}}
-          />
-          <CommonText
-            text={`-${formatCurrency(sales)}đ`}
-            styles={styles.salePrice}
-          />
+          <CommonText text="Giảm giá" styles={{ ...styles.textHolder, ...styles.mgV4 }} />
+          <CommonText text={`-${formatCurrency(sales)}đ`} styles={styles.salePrice} />
         </View>
 
         <View style={styles.rowItemPrice}>
           <CommonText text="Tổng thanh toán" styles={styles.textHolder} />
-          <CommonText
-            text={`${formatCurrency(pay)}đ`}
-            styles={styles.payPrice}
-          />
+          <CommonText text={`${formatCurrency(pay)}đ`} styles={styles.payPrice} />
         </View>
       </View>
-    )
-  }
+    );
+  };
 
   const renderTimeSchedule = () => {
     return (
@@ -357,10 +320,7 @@ const InformationOrder = ({route}: Props) => {
         <CommonText text="Thời gian - địa điểm đặt lịch" styles={styles.time} />
         <View style={styles.rowTime}>
           <Icons.Clock />
-          <CommonText
-            text={dayjs(schedule).format('HH:mm DD/MM/YYYY')}
-            styles={styles.title}
-          />
+          <CommonText text={dayjs(schedule).format('HH:mm DD/MM/YYYY')} styles={styles.title} />
         </View>
         <View style={styles.rowTime}>
           <Icons.LocationSmall />
@@ -368,42 +328,27 @@ const InformationOrder = ({route}: Props) => {
         </View>
         {note !== '' && <CommonText text={note} styles={styles.note} />}
       </View>
-    )
-  }
+    );
+  };
 
   const renderPayment = () => {
     return (
       <View style={styles.pdHz20}>
         <CommonText text="Thanh toán bằng" styles={styles.payment} />
         {payments?.map((item, index) => {
-          const useTakerWallet = item?.id === 3
+          const useTakerWallet = item?.id === 3;
           return (
             <View key={index}>
-              <TouchableOpacity
-                style={styles.rowItemPayment}
-                onPress={() => setTypePayment(item.id)}>
-                {typePayment === item?.id ? (
-                  <Icons.Checked />
-                ) : (
-                  <Icons.UnChecked />
-                )}
+              <TouchableOpacity style={styles.rowItemPayment} onPress={() => setTypePayment(item.id)}>
+                {typePayment === item?.id ? <Icons.Checked /> : <Icons.UnChecked />}
                 {useTakerWallet ? (
                   <View style={styles.wrapperItemTaker}>
                     <View style={styles.rowItemTaker}>
-                      <CommonText
-                        text={item?.name}
-                        styles={styles.textPayment}
-                      />
-                      <CommonText
-                        styles={styles.textMain}
-                        text={' (Số dư ví: ' + formatCurrency(balance) + 'đ)'}
-                      />
+                      <CommonText text={item?.name} styles={styles.textPayment} />
+                      <CommonText styles={styles.textMain} text={' (Số dư ví: ' + formatCurrency(balance) + 'đ)'} />
                     </View>
-                    <TouchableOpacity
-                      onPress={onPressReload}
-                      hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-                      <Animated.View
-                        style={{transform: [{rotate: rotateInterpolation}]}}>
+                    <TouchableOpacity onPress={onPressReload} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                      <Animated.View style={{ transform: [{ rotate: rotateInterpolation }] }}>
                         <Icons.Reload />
                       </Animated.View>
                     </TouchableOpacity>
@@ -414,120 +359,91 @@ const InformationOrder = ({route}: Props) => {
               </TouchableOpacity>
               {useTakerWallet && balance < total && (
                 <TouchableOpacity onPress={onPressDeposit}>
-                  <CommonText
-                    text="Nạp thêm tiền vào ví để sử dụng"
-                    styles={styles.deposit}
-                  />
+                  <CommonText text="Nạp thêm tiền vào ví để sử dụng" styles={styles.deposit} />
                 </TouchableOpacity>
               )}
             </View>
-          )
+          );
         })}
       </View>
-    )
-  }
+    );
+  };
 
   const renderButtonOrder = () => (
     <View style={styles.wrapperBottom}>
       <View style={styles.rowTotalPrice}>
         <CommonText text="Tổng cộng" />
-        <CommonText
-          text={`${formatCurrency(pay)}đ`}
-          styles={styles.textPrice}
-        />
+        <CommonText text={`${formatCurrency(pay)}đ`} styles={styles.textPrice} />
       </View>
-      <CommonButton
-        isDisable={balance < pay && typePayment === 3}
-        text="Đặt đơn"
-        onPress={onPressOrder}
-        isLoading={loadingButton}
-      />
+      <CommonButton isDisable={balance < pay && typePayment === 3} text="Đặt đơn" onPress={onPressOrder} isLoading={loadingButton} />
     </View>
-  )
+  );
 
   const onBackdropPress = () => {
-    setShowModalSuccess(false)
-    navigate('BottomStack')
-  }
+    setShowModalSuccess(false);
+    navigate('BottomStack');
+  };
 
   const onOrder = async (): Promise<ResponseCreateTrip> => {
     try {
-      const newServices = services.map(item => omit(item, 'name'))
+      const newServices = services.map(item => omit(item, 'name'));
       const params: ParamsCreateTrip = {
-        customerId: customerId ?? '',
+        customerId: customer.id ?? '',
         latitude: `${latitude}`,
         longitude: `${longitude}`,
-        paymentMethod:
-          payments?.find(item => item?.id === typePayment)?.key ||
-          'OFFLINE_PAYMENT',
+        paymentMethod: payments?.find(item => item?.id === typePayment)?.key || 'OFFLINE_PAYMENT',
         services: newServices,
         addressNote: note ?? '',
         address,
-        ...(isScheduleTime && {scheduleTime: dayjs(schedule).valueOf()}),
-      }
+        ...(isScheduleTime && { scheduleTime: dayjs(schedule).valueOf() }),
+      };
 
-      const response = await triggerCreateTrip(params)
-      return response
+      const response = await triggerCreateTrip(params);
+      return response;
     } catch (err) {
-      throw err
+      throw err;
     }
-  }
+  };
 
   const showCancelOrder = () => {
-    actionSheetFailedPaymentRef?.current?.show()
-    NUMBER_RETRY = 10
-    setLoading(false)
-  }
+    actionSheetFailedPaymentRef?.current?.show();
+    NUMBER_RETRY = 10;
+    setLoading(false);
+  };
 
-  const checkStatusPayment = async ({
-    tripId,
-    paymentUrl,
-    response,
-  }: {
-    tripId: string
-    paymentUrl: string
-    response: ResponseCreateTrip
-  }) => {
+  const checkStatusPayment = async ({ tripId, paymentUrl, response }: { tripId: string; paymentUrl: string; response: ResponseCreateTrip }) => {
     try {
-      setLoading(true)
-      const statusPayment = await triggerGetPaymentStatus({id: tripId})
+      setLoading(true);
+      const statusPayment = await triggerGetPaymentStatus({ id: tripId });
       if (statusPayment?.data === 'PAID') {
-        onSuccess(response)
+        onSuccess(response);
       } else if (statusPayment?.data === 'PENDING') {
         if (NUMBER_RETRY > 0) {
-          NUMBER_RETRY -= 1
+          NUMBER_RETRY -= 1;
           setTimeout(() => {
-            checkStatusPayment({paymentUrl, tripId, response})
-          }, 2000)
+            checkStatusPayment({ paymentUrl, tripId, response });
+          }, 2000);
         } else {
-          showCancelOrder()
+          showCancelOrder();
         }
       } else {
-        showCancelOrder()
+        showCancelOrder();
       }
     } catch {
-      showMessageError('Có lỗi xảy ra khi thanh toán!')
+      showMessageError('Có lỗi xảy ra khi thanh toán!');
     } finally {
       // setLoading(false)
     }
-  }
+  };
 
-  const paymentByCreditCard = async ({
-    paymentUrl,
-    tripId,
-    response,
-  }: {
-    paymentUrl: string
-    tripId: string
-    response: ResponseCreateTrip
-  }) => {
-    eventEmitter.addListener('PaymentBack', async (e: {resultCode: number}) => {
-      console.log('Sdk back!', e)
+  const paymentByCreditCard = async ({ paymentUrl, tripId, response }: { paymentUrl: string; tripId: string; response: ResponseCreateTrip }) => {
+    eventEmitter.addListener('PaymentBack', async (e: { resultCode: number }) => {
+      console.log('Sdk back!', e);
       if (e) {
         switch (e.resultCode) {
           case 97: //thanh toán thành công trên webview
-            checkStatusPayment({tripId, paymentUrl, response})
-            break
+            checkStatusPayment({ tripId, paymentUrl, response });
+            break;
           case 10: //Người dùng nhấn chọn thanh toán qua app thanh toán (Mobile Banking, Ví...) lúc này app tích hợp sẽ cần lưu lại cái PNR, khi nào người dùng mở lại app tích hợp thì sẽ gọi kiểm tra trạng thái thanh toán của PNR Đó xem đã thanh toán hay chưa.
             // FIXME:
             setCheckPaymentAppCallApp({
@@ -535,11 +451,11 @@ const InformationOrder = ({route}: Props) => {
               paymentUrl,
               response,
               isCallApp: true,
-            })
-            break
+            });
+            break;
           case 98: //giao dịch thanh toán bị failed
-            showMessageError('Thanh toán không thành công!')
-            break
+            showMessageError('Thanh toán không thành công!');
+            break;
           case -1: //Người dùng nhấn back từ sdk để quay lại
           case 99:
             // setLoadingButton(false)
@@ -548,14 +464,14 @@ const InformationOrder = ({route}: Props) => {
               paymentUrl,
               response,
               isCallApp: true,
-            })
-            break
+            });
+            break;
           default:
-            break
+            break;
         }
       }
-      eventEmitter.removeAllListeners('PaymentBack')
-    })
+      eventEmitter.removeAllListeners('PaymentBack');
+    });
     VnpayMerchant.show({
       isSandbox: false,
       scheme: 'taker',
@@ -566,121 +482,118 @@ const InformationOrder = ({route}: Props) => {
       tmn_code: 'TAKER001',
       paymentUrl: paymentUrl,
       iconBackName: 'icon_back',
-    })
-  }
+    });
+  };
 
   const onPressOrder = async () => {
-    setLoading(true)
-    setLoadingButton(true)
+    setLoading(true);
+    setLoadingButton(true);
     try {
-      const response = await onOrder()
+      const response = await onOrder();
       if (response?.data?.paymentUrl) {
         paymentByCreditCard({
           paymentUrl: response?.data?.paymentUrl,
           tripId: response?.data?.tripId,
           response: response,
-        })
+        });
       } else {
         if (response?.data?.tripId) {
-          onSuccess(response)
-          setLoading(false)
+          onSuccess(response);
+          setLoading(false);
+          if (customer.newUser) setUser({ ...customer, newUser: false });
         } else {
-          showMessageError('Có lỗi xảy ra, vui lòng thử lại sau')
-          setLoadingButton(false)
-          setLoading(false)
+          showMessageError('Có lỗi xảy ra, vui lòng thử lại sau');
+          setLoadingButton(false);
+          setLoading(false);
         }
       }
     } catch (err) {
-      showMessageError('Có lỗi xảy ra, vui lòng thử lại sau')
-      setLoadingButton(false)
-      setLoading(false)
+      showMessageError('Có lỗi xảy ra, vui lòng thử lại sau');
+      setLoadingButton(false);
+      setLoading(false);
     } finally {
       // setLoading(false)
     }
-  }
+  };
 
   const onSuccess = (response: ResponseCreateTrip) => {
-    updateTripID(response?.data?.tripId)
+    updateTripID(response?.data?.tripId);
     socketService.emit(SocketEvents.FIND_CLOSET_SHOE_MAKERS, {
       tripId: response?.data?.tripId,
-      location: {lat: latitude, lng: longitude},
-    })
-    EventBus.emit(EventBusType.CREATE_ORDER_SUCCESS)
+      location: { lat: latitude, lng: longitude },
+    });
+    EventBus.emit(EventBusType.CREATE_ORDER_SUCCESS);
     const reOrder = () => {
       socketService.emit(SocketEvents.FIND_CLOSET_SHOE_MAKERS, {
         tripId: response?.data?.tripId,
-        location: {lat: latitude, lng: longitude},
-      })
-    }
+        location: { lat: latitude, lng: longitude },
+      });
+    };
     triggerCreateHistory({
       latitude: `${latitude}`,
       longitude: `${longitude}`,
       name,
       address,
-    })
+    });
     if (isScheduleTime) {
-      setShowModalSuccess(true)
+      setShowModalSuccess(true);
     } else {
       navigate('FindMaker', {
         total: pay,
         reOrder: reOrder,
         tripId: response?.data?.tripId,
         paymentMethod: typePayment,
-      })
+      });
     }
-  }
+  };
 
   const onPressReload = async () => {
     try {
-      setIsReload(true)
-      await triggerGetBalance()
+      setIsReload(true);
+      await triggerGetBalance();
     } catch (err) {
     } finally {
       setTimeout(() => {
-        setIsReload(false)
-      }, 900)
+        setIsReload(false);
+      }, 900);
     }
-  }
+  };
 
-  const onPressDeposit = () => navigate('Deposit')
+  const onPressDeposit = () => navigate('Deposit');
 
   const onClosePopupFailedPayment = async () => {
     try {
-      actionSheetFailedPaymentRef?.current?.hide()
-      setLoading(true)
+      actionSheetFailedPaymentRef?.current?.hide();
+      setLoading(true);
       const response = await triggerCancelTrip({
         tripId: checkPaymentAppCallApp?.tripId,
         reason: reasonsCancel[4].name,
-      })
+      });
       if (response?.data) {
-        setLoadingButton(false)
+        setLoadingButton(false);
       }
     } catch (err) {
-      showMessageError('Có lỗi xảy ra khi hủy dịch vụ!')
+      showMessageError('Có lỗi xảy ra khi hủy dịch vụ!');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    if (
-      isFocused &&
-      checkPaymentAppCallApp?.isCallApp &&
-      checkPaymentAppCallApp?.response
-    ) {
+    if (isFocused && checkPaymentAppCallApp?.isCallApp && checkPaymentAppCallApp?.response) {
       checkStatusPayment({
         tripId: checkPaymentAppCallApp?.tripId,
         paymentUrl: checkPaymentAppCallApp?.paymentUrl,
         response: checkPaymentAppCallApp?.response,
-      })
+      });
     }
-  }, [isFocused, checkPaymentAppCallApp])
+  }, [isFocused, checkPaymentAppCallApp]);
 
   useEffect(() => {
     if (isFocused) {
-      triggerGetBalance()
+      triggerGetBalance();
     }
-  }, [isFocused, triggerGetBalance])
+  }, [isFocused, triggerGetBalance]);
 
   useEffect(() => {
     if (isReload) {
@@ -690,19 +603,17 @@ const InformationOrder = ({route}: Props) => {
           duration: 1000,
           useNativeDriver: true,
         }),
-      ).start()
+      ).start();
     } else {
-      rotation.stopAnimation()
-      rotation.setValue(0)
+      rotation.stopAnimation();
+      rotation.setValue(0);
     }
-  }, [isReload, rotation])
+  }, [isReload, rotation]);
 
   return (
     <View style={styles.wrapper}>
       <Header title="Thông tin đặt hàng" />
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         {renderInformation()}
         <View style={styles.line} />
         {renderPrice()}
@@ -717,18 +628,10 @@ const InformationOrder = ({route}: Props) => {
       </ScrollView>
       {renderButtonOrder()}
 
-      <ModalSuccess
-        onBackdropPress={onBackdropPress}
-        isVisible={showModalSuccess}
-        title="Thành công"
-        desc="Bạn đã đặt lịch thành công"
-      />
-      <PopupFailedPayment
-        ref={actionSheetFailedPaymentRef}
-        onClose={onClosePopupFailedPayment}
-      />
+      <ModalSuccess onBackdropPress={onBackdropPress} isVisible={showModalSuccess} title="Thành công" desc="Bạn đã đặt lịch thành công" />
+      <PopupFailedPayment ref={actionSheetFailedPaymentRef} onClose={onClosePopupFailedPayment} />
     </View>
-  )
-}
+  );
+};
 
-export default InformationOrder
+export default InformationOrder;

@@ -1,28 +1,22 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useEffect, useRef, useState} from 'react'
-import {
-  View,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Platform,
-  Animated,
-} from 'react-native'
-import CommonText from 'components/CommonText'
-import {Colors} from 'assets/Colors'
-import {Icons} from 'assets/icons'
-import {Fonts} from 'assets/Fonts'
-import ControlNumber from './components/ControlNumber'
-import {formatCurrency, totalPricePayment} from '../utils'
-import Header from 'components/Header'
-import {navigate} from 'navigation/utils/navigationUtils'
-import {useGetListService} from 'services/src/serveRequest/serveService'
-import {appStore} from 'state/app'
-import {ItemService} from 'services/src/typings'
-import {isNil} from 'lodash'
-import FastImage from 'react-native-fast-image'
-import {s3Url} from 'services/src/APIConfig'
-const TAKE = 10
+import React, { useEffect, useRef, useState } from 'react';
+import { View, StyleSheet, FlatList, TouchableOpacity, Platform, Animated } from 'react-native';
+import CommonText from 'components/CommonText';
+import { Colors } from 'assets/Colors';
+import { Icons } from 'assets/icons';
+import { Fonts } from 'assets/Fonts';
+import ControlNumber from './components/ControlNumber';
+import { formatCurrency, totalPricePayment } from '../utils';
+import Header from 'components/Header';
+import { navigate } from 'navigation/utils/navigationUtils';
+import { useGetListService } from 'services/src/serveRequest/serveService';
+import { appStore } from 'state/app';
+import { ItemService } from 'services/src/typings';
+import { isNil } from 'lodash';
+import FastImage from 'react-native-fast-image';
+import { s3Url } from 'services/src/APIConfig';
+import { userStore } from 'state/user';
+const TAKE = 10;
 
 const styles = StyleSheet.create({
   container: {
@@ -165,55 +159,57 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
   },
-})
+});
 
 const ChooseProduct = () => {
-  const {loading, setLoading} = appStore(state => state)
+  const { loading, setLoading } = appStore(state => state);
+  const customer = userStore(state => state.user);
   const [products, setProducts] = useState<{
-    data: ItemService[]
-    isLoading: boolean
-    enableLoadMore: boolean
+    data: ItemService[];
+    isLoading: boolean;
+    enableLoadMore: boolean;
   }>({
     data: [],
     isLoading: false,
     enableLoadMore: true,
-  })
+  });
 
-  const [services, setServices] = useState<serve.Services[]>([])
+  const [services, setServices] = useState<serve.Services[]>([]);
 
-  const shakeAnimationValue = useRef(new Animated.Value(0)).current
-  const {triggerListService} = useGetListService()
+  const shakeAnimationValue = useRef(new Animated.Value(0)).current;
+  const { triggerListService } = useGetListService();
 
-  const getListServices = async (params: {take: number; skip: number}) => {
+  const getListServices = async (params: { take: number; skip: number }) => {
     if (!products?.enableLoadMore || products?.isLoading || loading) {
-      return
+      return;
     }
-    setLoading(true)
+    setLoading(true);
     try {
-      const response = await triggerListService(params)
+      const response = await triggerListService(params);
       if (response?.data?.length) {
+        const moreProducts = customer.newUser ? response?.data : response?.data.filter(item => !item.experienceOnce);
         setProducts({
-          data: [...products.data, ...response?.data],
+          data: [...products.data, ...moreProducts],
           isLoading: false,
           enableLoadMore: response?.data?.length < TAKE ? false : true,
-        })
+        });
       } else {
         setProducts({
           data: [...products.data],
           isLoading: false,
           enableLoadMore: false,
-        })
+        });
       }
     } catch (err) {
-      console.log('Err ==>', err)
+      console.log('Err ==>', err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    getListServices({take: TAKE, skip: 0})
-  }, [])
+    getListServices({ take: TAKE, skip: 0 });
+  }, []);
 
   const animateShake = () => {
     Animated.sequence([
@@ -232,17 +228,17 @@ const ChooseProduct = () => {
         duration: 50,
         useNativeDriver: true,
       }),
-    ]).start()
-  }
+    ]).start();
+  };
 
   const onPressPlus = (item: ItemService) => () => {
-    const itemService = services.find(
-      service => service?.serviceId === item?.id,
-    )
+    const itemService = services.find(service => service?.serviceId === item?.id);
     if (itemService) {
-      itemService.quantity += 1
-      setServices([...services])
-      animateShake()
+      if (!item.experienceOnce || itemService.quantity == 0) {
+        itemService.quantity += 1;
+        setServices([...services]);
+        animateShake();
+      }
     } else {
       const newItem: serve.Services = {
         name: item.name,
@@ -250,46 +246,41 @@ const ChooseProduct = () => {
         quantity: 1,
         price: item.price,
         discountPrice: item.discountPrice,
-      }
-      setServices([...services, newItem])
-      animateShake()
+      };
+      setServices([...services, newItem]);
+      animateShake();
     }
-  }
+  };
 
   const onPressMinus = (item: ItemService) => () => {
-    const itemService = services.find(
-      service => service?.serviceId === item?.id,
-    )
+    const itemService = services.find(service => service?.serviceId === item?.id);
     if (itemService) {
-      itemService.quantity -= 1
-      setServices([...services])
-      animateShake()
+      itemService.quantity -= 1;
+      setServices([...services]);
+      animateShake();
     }
-  }
+  };
 
   const totalCountProduct = () => {
-    return services
-      .filter(item => item?.quantity > 0)
-      .reduce((total, item) => total + item?.quantity, 0)
-  }
+    return services.filter(item => item?.quantity > 0).reduce((total, item) => total + item?.quantity, 0);
+  };
 
-  const count = totalCountProduct()
+  const count = totalCountProduct();
 
   const onPressOrder = () => {
     if (!count) {
-      return
+      return;
     }
-    const newServices = services.filter(item => item?.quantity > 0)
-    navigate('OrderInformation', {services: newServices})
-  }
+    const newServices = services.filter(item => item?.quantity > 0);
+    navigate('OrderInformation', { services: newServices });
+  };
 
-  const onEndReached = () =>
-    getListServices({take: TAKE, skip: products.data?.length})
+  const onEndReached = () => getListServices({ take: TAKE, skip: products.data?.length });
 
-  const renderKeyExtractor = (item: ItemService) => `${item?.id}`
+  const renderKeyExtractor = (item: ItemService) => `${item?.id}`;
 
-  const renderItemProduct = ({item}: {item: ItemService}) => {
-    const itemService = services.find(e => e?.serviceId === item?.id)
+  const renderItemProduct = ({ item }: { item: ItemService }) => {
+    const itemService = services.find(e => e?.serviceId === item?.id);
     return (
       <View style={styles.rowItemProduct}>
         <View style={styles.leftItemProduct}>
@@ -308,50 +299,33 @@ const ChooseProduct = () => {
                 text={`${formatCurrency(item?.price)}đ`}
                 styles={{
                   ...styles.price,
-                  textDecorationLine: item?.discountPrice
-                    ? 'line-through'
-                    : 'none',
+                  textDecorationLine: item?.discountPrice ? 'line-through' : 'none',
                 }}
               />
-              {!isNil(item?.discountPrice) && (
-                <CommonText
-                  text={`${formatCurrency(item?.discountPrice ?? 0)}đ`}
-                  styles={styles.sale}
-                />
-              )}
+              {!isNil(item?.discountPrice) && <CommonText text={`${formatCurrency(item?.discountPrice ?? 0)}đ`} styles={styles.sale} />}
             </View>
             {!isNil(item?.discountPrice) && (
               <View style={styles.wrapperDiscount}>
-                <CommonText
-                  text={`Tiết kiệm ${item?.discount}%`}
-                  styles={styles.discount}
-                />
+                <CommonText text={`Tiết kiệm ${item?.discount}%`} styles={styles.discount} />
               </View>
             )}
           </View>
         </View>
         {itemService && itemService?.quantity > 0 ? (
-          <ControlNumber
-            count={itemService?.quantity}
-            onPressMinus={onPressMinus(item)}
-            onPressPlus={onPressPlus(item)}
-          />
+          <ControlNumber count={itemService?.quantity} onPressMinus={onPressMinus(item)} onPressPlus={onPressPlus(item)} />
         ) : (
           <TouchableOpacity onPress={onPressPlus(item)}>
             <Icons.AddToCart />
           </TouchableOpacity>
         )}
       </View>
-    )
-  }
+    );
+  };
 
   const renderTotalProduct = () => {
     return (
       <View style={styles.wrapperBottom}>
-        <TouchableOpacity
-          style={styles.btOrder}
-          onPress={onPressOrder}
-          disabled={count === 0}>
+        <TouchableOpacity style={styles.btOrder} onPress={onPressOrder} disabled={count === 0}>
           <View style={styles.rowCenter}>
             <Animated.View
               style={{
@@ -385,29 +359,19 @@ const ChooseProduct = () => {
             </View>
           </View>
 
-          <CommonText
-            text={`${formatCurrency(totalPricePayment(services))}đ`}
-            styles={styles.totalPrice}
-          />
+          <CommonText text={`${formatCurrency(totalPricePayment(services))}đ`} styles={styles.totalPrice} />
         </TouchableOpacity>
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <View style={styles.container}>
       <Header title="Chọn dịch vụ" />
-      <FlatList
-        data={products.data}
-        renderItem={renderItemProduct}
-        keyExtractor={renderKeyExtractor}
-        contentContainerStyle={styles.contentContainer}
-        onEndReachedThreshold={0.1}
-        onEndReached={onEndReached}
-      />
+      <FlatList data={products.data} renderItem={renderItemProduct} keyExtractor={renderKeyExtractor} contentContainerStyle={styles.contentContainer} onEndReachedThreshold={0.1} onEndReached={onEndReached} />
       <View>{renderTotalProduct()}</View>
     </View>
-  )
-}
+  );
+};
 
-export default ChooseProduct
+export default ChooseProduct;

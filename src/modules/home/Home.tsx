@@ -1,48 +1,32 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
-  Platform,
-  AppState,
-  Linking,
-} from 'react-native';
-import {PermissionStatus} from 'react-native-permissions';
-import {Colors} from 'assets/Colors';
-import {Fonts} from 'assets/Fonts';
-import {Icons} from 'assets/icons';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, TouchableOpacity, ScrollView, Dimensions, Platform, AppState, Linking } from 'react-native';
+import { PermissionStatus } from 'react-native-permissions';
+import { Colors } from 'assets/Colors';
+import { Fonts } from 'assets/Fonts';
+import { Icons } from 'assets/icons';
 import Banner from 'components/Banner';
 import Post from 'components/Post';
 import CommonText from 'components/CommonText';
-import {userStore} from 'state/user';
-import {navigate} from 'navigation/utils/navigationUtils';
-import {serveRequestStore} from 'state/serveRequest/serveRequestStore';
-import {formatCurrency, renderStatusActivity} from 'utils/index';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {
-  isLocationEnabled,
-  promptForEnableLocationIfNeeded,
-} from 'react-native-android-location-enabler';
+import { userStore } from 'state/user';
+import { navigate } from 'navigation/utils/navigationUtils';
+import { serveRequestStore } from 'state/serveRequest/serveRequestStore';
+import { formatCurrency, renderStatusActivity } from 'utils/index';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { isLocationEnabled, promptForEnableLocationIfNeeded } from 'react-native-android-location-enabler';
 import PopupOpenSetting from 'components/PopupOpenSetting';
-import {ActionSheetRef} from 'react-native-actions-sheet';
+import { ActionSheetRef } from 'react-native-actions-sheet';
 import usePermission from 'hooks/locationPermission';
-import {EventBus, EventBusType} from 'observer';
-import {SocketEvents, SocketService} from 'socketIO';
-import {StatusActivity} from 'modules/activity/typings';
-import {cloneDeep, isEmpty} from 'lodash';
-import {useGetBalance} from 'services/src/profile';
-import {useIsFocused} from '@react-navigation/native';
-import {
-  useCancelTrip,
-  useGetPaymentStatus,
-  useGetServiceInProgress,
-} from 'services/src/serveRequest/serveService';
-import {appStore} from 'state/app';
+import { EventBus, EventBusType } from 'observer';
+import { SocketEvents, SocketService } from 'socketIO';
+import { StatusActivity } from 'modules/activity/typings';
+import { cloneDeep, isEmpty } from 'lodash';
+import { useGetBalance } from 'services/src/profile';
+import { useIsFocused } from '@react-navigation/native';
+import { useCancelTrip, useGetPaymentStatus, useGetServiceInProgress } from 'services/src/serveRequest/serveService';
+import { appStore } from 'state/app';
 import PopupFailedPayment from 'components/PopupFailedPayment';
-import {reasonsCancel} from 'modules/requestServe/constants';
-import {ResponseServiceInProgress} from 'services/src/typings';
+import { reasonsCancel } from 'modules/requestServe/constants';
+import { ResponseServiceInProgress } from 'services/src/typings';
 import ModalPromotion from 'components/ModalPromotion';
 import PopupHaveOrder from 'components/PopupHaveOrder';
 
@@ -91,7 +75,7 @@ const styles = StyleSheet.create({
     shadowColor: Colors.border,
     borderColor: Colors.border,
     borderWidth: 1,
-    shadowOffset: {width: -2, height: 4},
+    shadowOffset: { width: -2, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
     flexDirection: 'row',
@@ -202,22 +186,20 @@ const styles = StyleSheet.create({
 const isIOS = Platform.OS === 'ios';
 
 const Home = () => {
-  const {triggerGetBalance, balance} = useGetBalance();
-  const {triggerServiceInProgress} = useGetServiceInProgress();
-  const {triggerGetPaymentStatus} = useGetPaymentStatus();
-  const {triggerCancelTrip} = useCancelTrip();
+  const { triggerGetBalance, balance } = useGetBalance();
+  const { triggerServiceInProgress } = useGetServiceInProgress();
+  const { triggerGetPaymentStatus } = useGetPaymentStatus();
+  const { triggerCancelTrip } = useCancelTrip();
 
   const isFocused = useIsFocused();
   const user = userStore(state => state.user);
-  const {top} = useSafeAreaInsets();
-  const {checkPermissionLocation, requestPermissionLocation} = usePermission();
+  const { top } = useSafeAreaInsets();
+  const { checkPermissionLocation, requestPermissionLocation } = usePermission();
   const socketService = SocketService.getInstance();
-  const {setLoading} = appStore(state => state);
+  const { setLoading } = appStore(state => state);
 
-  const {updateSchedule, updateLocation} = serveRequestStore(state => state);
-  const {orderInProgress, updateOrderInProgress} = serveRequestStore(
-    state => state,
-  );
+  const { updateSchedule, updateLocation } = serveRequestStore(state => state);
+  const { orderInProgress, updateOrderInProgress } = serveRequestStore(state => state);
 
   const [showModalPromotion, setShowModalPromotion] = useState<boolean>(false);
   const actionSheetRef = useRef<ActionSheetRef>(null);
@@ -228,7 +210,7 @@ const Home = () => {
   const [checkStatusPayment, setCheckStatusPayment] = useState<{
     isChecked: boolean;
     isPaid: boolean;
-  }>({isChecked: false, isPaid: true});
+  }>({ isChecked: false, isPaid: true });
 
   const onPressViewOrder = async () => {
     if (!checkStatusPayment?.isPaid) {
@@ -240,7 +222,7 @@ const Home = () => {
       socketService.off(SocketEvents.TRIP_STATUS);
       socketService.off(SocketEvents.FIND_CLOSET_SHOE_MAKERS);
 
-      const {shoemaker} = orderInProgress?.[0];
+      const { shoemaker } = orderInProgress?.[0];
       updateLocation({
         latitude: Number(orderInProgress?.[0]?.latitude),
         longitude: Number(orderInProgress?.[0]?.longitude),
@@ -369,10 +351,7 @@ const Home = () => {
     if (!isEmpty(orderInProgress)) {
       try {
         const response = await triggerServiceInProgress();
-        console.log(
-          '🚀 ~ getOrderInProgress ~ response?.data?.[0]?.status:',
-          response?.data,
-        );
+        console.log('🚀 ~ getOrderInProgress ~ response?.data?.[0]?.status:', response?.data);
         if (response?.data?.length) {
           updateStatusOrder(response?.data?.[0]?.status);
         }
@@ -396,7 +375,7 @@ const Home = () => {
   const checkStatusPaymentFunc = async (id: string) => {
     try {
       setLoading(true);
-      const response = await triggerGetPaymentStatus({id});
+      const response = await triggerGetPaymentStatus({ id });
       setCheckStatusPayment({
         isChecked: true,
         isPaid: response?.data === 'PAID',
@@ -430,10 +409,7 @@ const Home = () => {
   useEffect(() => {
     checkPermission();
     const subscription = AppState.addEventListener('change', nextAppState => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
         getOrderInProgress();
         checkPermission();
       }
@@ -461,11 +437,7 @@ const Home = () => {
         }
       });
     }
-    if (
-      !isEmpty(orderInProgress) &&
-      !checkStatusPayment.isChecked &&
-      orderInProgress[0]?.paymentMethod === 'CREDIT_CARD'
-    ) {
+    if (!isEmpty(orderInProgress) && !checkStatusPayment.isChecked && orderInProgress[0]?.paymentMethod === 'CREDIT_CARD') {
       checkStatusPaymentFunc(orderInProgress[0]?.id);
     }
   }, [orderInProgress]);
@@ -507,10 +479,7 @@ const Home = () => {
   const renderActions = () => (
     <View style={styles.wrapperFuntions}>
       {actions.map((item, index) => (
-        <TouchableOpacity
-          key={`${index}`}
-          style={styles.item}
-          onPress={item.onPress}>
+        <TouchableOpacity key={`${index}`} style={styles.item} onPress={item.onPress}>
           {item?.icon}
           <CommonText text={item.title} styles={styles.label} />
         </TouchableOpacity>
@@ -530,9 +499,7 @@ const Home = () => {
   const renderMenu = () => {
     return (
       <View style={styles.top}>
-        <TouchableOpacity
-          onPress={() => navigate('Wallet')}
-          style={styles.leftTop}>
+        <TouchableOpacity onPress={() => navigate('Wallet')} style={styles.leftTop}>
           <View style={styles.iconWallet}>
             <Icons.Wallet />
           </View>
@@ -546,9 +513,7 @@ const Home = () => {
             </View>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => navigate('Referral')}
-          style={styles.rightTop}>
+        <TouchableOpacity onPress={() => navigate('Referral')} style={styles.rightTop}>
           <View>
             <CommonText text="Mã giới thiệu của bạn" styles={styles.lable} />
             <View style={styles.number}>
@@ -565,18 +530,11 @@ const Home = () => {
       return;
     }
     return (
-      <TouchableOpacity
-        style={styles.itemInProgress}
-        onPress={onPressViewOrder}>
+      <TouchableOpacity style={styles.itemInProgress} onPress={onPressViewOrder}>
         <Icons.CheckList />
         <View style={styles.statusInprogress}>
-          <CommonText
-            text={renderStatusActivity(orderInProgress?.[0]?.status)}
-          />
-          <CommonText
-            text={`Đơn hàng #${orderInProgress?.[0]?.orderId}`}
-            styles={styles.idOrder}
-          />
+          <CommonText text={renderStatusActivity(orderInProgress?.[0]?.status)} />
+          <CommonText text={`Đơn hàng #${orderInProgress?.[0]?.orderId}`} styles={styles.idOrder} />
         </View>
       </TouchableOpacity>
     );
@@ -607,11 +565,8 @@ const Home = () => {
 
   return (
     <>
-      <ScrollView
-        style={{...styles.container}}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}>
-        <View style={{...styles.mainContainer, marginTop: top}}>
+      <ScrollView style={{ ...styles.container }} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        <View style={{ ...styles.mainContainer, marginTop: top }}>
           {renderHeader()}
           <View style={styles.main}>
             {renderMenu()}
@@ -621,26 +576,16 @@ const Home = () => {
           </View>
         </View>
 
-        <ModalPromotion
+        {/* <ModalPromotion
           showModalPromotion={showModalPromotion}
           onClose={onCloseModalPromotion}
           onPressPromotion={onPressRequestServe}
-        />
+        /> */}
 
-        <PopupHaveOrder
-          ref={actionSheetProcessRef}
-          onClose={onClosePopupProcessOrder}
-        />
+        <PopupHaveOrder ref={actionSheetProcessRef} onClose={onClosePopupProcessOrder} />
 
-        <PopupOpenSetting
-          granted={granted}
-          ref={actionSheetRef}
-          onPressContinue={onPressContinue}
-        />
-        <PopupFailedPayment
-          ref={actionSheetFailedPaymentRef}
-          onClose={onClosePopupFailedPayment}
-        />
+        <PopupOpenSetting granted={granted} ref={actionSheetRef} onPressContinue={onPressContinue} />
+        <PopupFailedPayment ref={actionSheetFailedPaymentRef} onClose={onClosePopupFailedPayment} />
       </ScrollView>
       {renderOrderInProgress()}
     </>

@@ -4,6 +4,7 @@ export type RootNavigatorParamList = {
   Main: undefined;
 
   // Auth stack
+  AuthStack: { screen?: string };
   LoginV2: undefined;
   Intro: undefined;
   Phone: undefined;

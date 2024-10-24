@@ -262,9 +262,16 @@ const Home = () => {
     }
   };
 
+  const navigateToVerifyAcc = () => {
+    navigate('AuthStack', {
+      screen: 'Otp',
+      params: { phone: user.phone, userId: user.id, isForget: false },
+    });
+  };
+
   const onPressRequestServe = async () => {
-    console.log('useruseruseruser', user);
-    if (!user.isVerified) return showMessageWarning('Bạn cần xác nhận tài khoản trước');
+    if (!user.isVerified) return navigateToVerifyAcc();
+    // if (!user.isVerified) return showMessageWarning('Bạn cần xác nhận tài khoản trước');
     if (orderInProgress?.length) {
       return actionSheetProcessRef?.current?.show();
     }
@@ -453,13 +460,8 @@ const Home = () => {
   const actions = [
     {
       icon: <Icons.Shoe />,
-      title: 'Gọi phục vụ',
+      title: 'Taker Shoes',
       onPress: onPressRequestServe,
-    },
-    {
-      icon: <Icons.TimeHome />,
-      title: 'Đặt lịch',
-      onPress: onPressScheduleServe,
     },
     {
       icon: <Icons.Bike />,
@@ -467,13 +469,18 @@ const Home = () => {
       onPress: () => navigate('Bike'),
     },
     {
-      icon: <Icons.CleanHome />,
-      title: 'Dọn nhà',
-      onPress: () => navigate('CleanHouse'),
+      icon: <Icons.TimeHome />,
+      title: 'Taker Food',
+      onPress: onPressScheduleServe,
     },
+    // {
+    //   icon: <Icons.CleanHome />,
+    //   title: 'Ứng dụng',
+    //   onPress: () => navigate('CleanHouse'),
+    // },
     {
       icon: <Icons.Store />,
-      title: 'Cửa hàng',
+      title: 'Ứng dụng',
       onPress: () => navigate('Store'),
     },
   ];

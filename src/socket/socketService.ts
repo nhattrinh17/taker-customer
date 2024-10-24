@@ -1,6 +1,6 @@
-import {StatusActivity} from 'modules/activity/typings';
-import {SOCKET_URL} from 'services/src/APIConfig';
-import io, {Socket} from 'socket.io-client';
+import { StatusActivity } from 'modules/activity/typings';
+import { SOCKET_URL } from 'services/src/APIConfig';
+import io, { Socket } from 'socket.io-client';
 
 interface ResponseSocket {
   lat: number;
@@ -20,7 +20,7 @@ class SocketService {
         token: this.token,
       },
     });
-    console.log('🚀 ~ SocketService ~ constructor ~ SOCKET_URL:', this.socket);
+    // console.log('🚀 ~ SocketService ~ constructor ~ SOCKET_URL:', this.socket);
   }
 
   public static getInstance(token?: string): SocketService {
@@ -38,7 +38,7 @@ class SocketService {
     console.log('On event ==>', event);
 
     this.socket.on(event, (data: ResponseSocket) => {
-      console.log('Receive Data socket ==>', {data, event});
+      console.log('Receive Data socket ==>', { data, event });
       callback(data);
     });
   }
@@ -76,17 +76,14 @@ class SocketService {
     this.socket.offAnyOutgoing();
   }
 
-  public once(
-    event: string,
-    callback: (response: ResponseSocket) => void,
-  ): void {
+  public once(event: string, callback: (response: ResponseSocket) => void): void {
     if (!this.socket) {
       console.log('Socket is not initialized. Call getInstance() first.');
       return;
     }
 
     this.socket.once(event, (data: ResponseSocket) => {
-      console.log('Receive Data socket ==>', {data, event});
+      console.log('Receive Data socket ==>', { data, event });
       callback(data);
     });
   }

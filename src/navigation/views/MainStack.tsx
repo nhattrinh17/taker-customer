@@ -25,6 +25,7 @@ import Withdraw from 'modules/wallet/Withdraw';
 import Camera from 'components/Camera';
 import useFirebaseNotifications from 'hooks/notificationsPermission';
 import DetailOrderScreen from 'modules/activity/DetailOrder';
+import AuthStack from './AuthStack';
 
 const Stack = createNativeStackNavigator<RootNavigatorParamList>();
 
@@ -78,6 +79,7 @@ const MainStack = () => {
       <StatusBar translucent={true} barStyle={'dark-content'} backgroundColor={Colors.transparent} />
       <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="BottomStack">
         <Stack.Screen name="BottomStack" component={BottomStack} />
+        <Stack.Screen name="AuthStack" component={AuthStack} />
         <Stack.Screen name="RequestServeStack" component={RequestServeStack} />
         <Stack.Screen name="HomePageStack" component={HomePageStack} />
         <Stack.Screen name="ProfileStack" component={ProfileStack} />

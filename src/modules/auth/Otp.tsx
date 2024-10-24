@@ -9,9 +9,10 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { navigate } from 'navigation/utils/navigationUtils';
 import { RouteProp } from '@react-navigation/native';
 import { RootNavigatorParamList } from 'navigation/typings';
-import { useSendSMS, useVerifyOtp } from 'services/src/auth';
+import { useMakeCall, useSendSMS, useVerifyOtp } from 'services/src/auth';
 import { appStore } from 'state/app';
 import { showMessageError } from 'utils/index';
+import { userStore } from 'state/user';
 
 const styles = StyleSheet.create({
   container: {
@@ -80,8 +81,9 @@ interface Props {
 const Otp = (props: Props) => {
   const { phone, userId, isForget } = props?.route?.params;
   const { triggerSendSMS } = useSendSMS();
+  const { triggerMakeCall } = useMakeCall();
   const { setLoading } = appStore(state => state);
-
+  const { setUser, user } = userStore(state => state);
   const { triggerVerifyOtp } = useVerifyOtp();
   const [error, setError] = useState<string>('');
 
@@ -95,11 +97,39 @@ const Otp = (props: Props) => {
     }
   }, [count]);
 
+  useEffect(() => {
+    async function makeCallForUser() {
+      if (phone) {
+        try {
+          setLoading(true);
+          const response = await triggerMakeCall({ phone });
+          if (response?.type?.toUpperCase() === 'SUCCESS') {
+            setCount(20);
+          }
+        } catch (err) {
+          showMessageError('Có lỗi xảy ra, vui lòng thử lại sau!');
+        } finally {
+          setLoading(false);
+        }
+      }
+    }
+
+    makeCallForUser();
+  }, []);
+
   const onFilledOTP = async (_value: string) => {
     try {
       const response = await triggerVerifyOtp({ userId, otp: _value });
       if (response.type === 'success') {
-        isForget ? navigate('NewPassword', { userId, phone, otp: _value }) : navigate('AuthInfomation', { userId, phone, otp: _value });
+        if (isForget) {
+          navigate('NewPassword', { userId, phone, otp: _value });
+        } else {
+          setUser({
+            ...user,
+            isVerified: true,
+          });
+          navigate('HomePageStack');
+        }
       }
     } catch (err) {
       setError('Mã xác thực sai. Vui lòng nhập lại');

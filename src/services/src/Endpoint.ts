@@ -8,6 +8,7 @@ const Endpoint = {
     UPDATE_INFOMATION: '/v1/customers/authentication',
     LOGOUT: '/v1/customers/authentication/logout',
     SEND_SMS: '/v1/customers/authentication/send-sms',
+    MAKE_CALL: '/v1/customers/authentication/make-call',
   },
   Profile: {
     PROFILE: '/v1/customers/profile',
@@ -45,6 +46,6 @@ const Endpoint = {
   Notification: {
     GET_LIST: '/v1/customers/notifications',
   },
-}
+};
 
-export default Endpoint
+export default Endpoint;

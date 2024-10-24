@@ -1,24 +1,21 @@
 const Stack = createNativeStackNavigator<RootNavigatorParamList>();
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CleanHouse from 'modules/home/CleanHouse';
 import Home from 'modules/home/Home';
 import Store from 'modules/home/Store';
 import Booking from 'modules/home/Booking';
 import Bike from 'modules/home/Bike';
-import {RootNavigatorParamList} from 'navigation/typings';
-import React, {useEffect} from 'react';
-import {userStore} from 'state/user';
-import {SocketEvents, SocketService} from 'socketIO';
+import { RootNavigatorParamList } from 'navigation/typings';
+import React, { useEffect } from 'react';
+import { userStore } from 'state/user';
+import { SocketEvents, SocketService } from 'socketIO';
 const HomePageStack = () => {
   const token = userStore(state => state.token);
   console.log('🚀 ~ HomePageStack ~ token:', token);
   const socketService = SocketService.getInstance(token);
 
   useEffect(() => {
-    console.log(
-      '==================================socketService ===>',
-      socketService,
-    );
+    console.log('==================================socketService ===>', socketService);
     socketService.on(SocketEvents.CONNECT, () => {
       console.log('connected socket ===>');
     });
@@ -45,9 +42,7 @@ const HomePageStack = () => {
     });
   }, []);
   return (
-    <Stack.Navigator
-      screenOptions={{headerShown: false}}
-      initialRouteName="Home">
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Home">
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Store" component={Store} />
       <Stack.Screen name="CleanHouse" component={CleanHouse} />

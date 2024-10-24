@@ -270,8 +270,8 @@ const Home = () => {
   };
 
   const onPressRequestServe = async () => {
-    if (!user.isVerified) return navigateToVerifyAcc();
-    // if (!user.isVerified) return showMessageWarning('Bạn cần xác nhận tài khoản trước');
+    // if (!user.isVerified) return navigateToVerifyAcc();
+    if (!user.isVerified) return showMessageWarning('Bạn cần xác nhận tài khoản trước');
     if (orderInProgress?.length) {
       return actionSheetProcessRef?.current?.show();
     }

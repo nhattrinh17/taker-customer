@@ -11,7 +11,6 @@ import { userStore } from 'state/user';
 import { SocketEvents, SocketService } from 'socketIO';
 const HomePageStack = () => {
   const token = userStore(state => state.token);
-  console.log('🚀 ~ HomePageStack ~ token:', token);
   const socketService = SocketService.getInstance(token);
 
   useEffect(() => {

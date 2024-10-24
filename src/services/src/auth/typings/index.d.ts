@@ -18,6 +18,10 @@ declare namespace auth {
 
   interface ParamsCreateAccount {
     phone: string;
+    password: string;
+    fullName: string;
+    address: string;
+    referralCode: string;
   }
   interface ResponeCreateAccount {
     type: string;

@@ -10,7 +10,7 @@ import CommonText from 'components/CommonText';
 import { userStore } from 'state/user';
 import { navigate } from 'navigation/utils/navigationUtils';
 import { serveRequestStore } from 'state/serveRequest/serveRequestStore';
-import { formatCurrency, renderStatusActivity } from 'utils/index';
+import { formatCurrency, renderStatusActivity, showMessageWarning } from 'utils/index';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isLocationEnabled, promptForEnableLocationIfNeeded } from 'react-native-android-location-enabler';
 import PopupOpenSetting from 'components/PopupOpenSetting';
@@ -263,6 +263,8 @@ const Home = () => {
   };
 
   const onPressRequestServe = async () => {
+    console.log('useruseruseruser', user);
+    if (!user.isVerified) return showMessageWarning('Bạn cần xác nhận tài khoản trước');
     if (orderInProgress?.length) {
       return actionSheetProcessRef?.current?.show();
     }

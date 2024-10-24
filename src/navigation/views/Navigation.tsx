@@ -1,13 +1,13 @@
-import {NavigationContainer} from '@react-navigation/native';
-import {navigationRef} from 'navigation/utils/navigationUtils';
-import React, {useEffect} from 'react';
-import {NativeModules, Platform, StyleSheet} from 'react-native';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {userStore} from 'state/user';
-import {appStore} from 'state/app';
-import Toast, {BaseToast, ToastConfig} from 'react-native-toast-message';
-import {Fonts} from 'assets/Fonts';
-import {Colors} from 'assets/Colors';
+import { NavigationContainer } from '@react-navigation/native';
+import { navigationRef } from 'navigation/utils/navigationUtils';
+import React, { useEffect } from 'react';
+import { NativeModules, Platform, StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { userStore } from 'state/user';
+import { appStore } from 'state/app';
+import Toast, { BaseToast, ToastConfig } from 'react-native-toast-message';
+import { Fonts } from 'assets/Fonts';
+import { Colors } from 'assets/Colors';
 
 import AuthStack from './AuthStack';
 import MainStack from './MainStack';
@@ -24,27 +24,19 @@ const styles = StyleSheet.create({
   typeError: {
     borderLeftColor: Colors.red,
   },
+  typeInfo: {
+    borderLeftColor: 'yellow',
+  },
 });
 
 const customToast: ToastConfig = {
-  success: props => (
-    <BaseToast
-      {...props}
-      style={styles.typeSuccess}
-      text2Style={styles.text2Style}
-    />
-  ),
-  error: props => (
-    <BaseToast
-      {...props}
-      style={styles.typeError}
-      text2Style={styles.text2Style}
-    />
-  ),
+  success: props => <BaseToast {...props} style={styles.typeSuccess} text2Style={styles.text2Style} />,
+  error: props => <BaseToast {...props} style={styles.typeError} text2Style={styles.text2Style} />,
+  info: props => <BaseToast {...props} style={styles.typeInfo} text2Style={styles.text2Style} />,
 };
 
 const RootNavigation = () => {
-  const {SplashScreen} = NativeModules;
+  const { SplashScreen } = NativeModules;
   const isLogin = userStore(state => state.token);
   // console.log('🚀 ~ RootNavigation ~ isLogin:', isLogin);
   const isLoading = appStore(state => state.loading);

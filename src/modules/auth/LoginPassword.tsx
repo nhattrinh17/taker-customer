@@ -1,24 +1,18 @@
-import {Colors} from 'assets/Colors'
-import {Fonts} from 'assets/Fonts'
-import CommonText from 'components/CommonText'
-import Header from 'components/Header'
-import React, {useState} from 'react'
-import {
-  Platform,
-  StyleSheet,
-  View,
-  Dimensions,
-  TouchableOpacity,
-} from 'react-native'
-import {OtpInput} from 'react-native-otp-entry'
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view'
-import {navigate} from 'navigation/utils/navigationUtils'
-import {userStore} from 'state/user'
-import {RouteProp} from '@react-navigation/native'
-import {RootNavigatorParamList} from 'navigation/typings'
-import {useLogin, useForgotPassword} from 'services/src/auth'
-import {appStore} from 'state/app'
-import {userInfo} from 'state/user/typings'
+import { Colors } from 'assets/Colors';
+import { Fonts } from 'assets/Fonts';
+import CommonText from 'components/CommonText';
+import Header from 'components/Header';
+import React, { useState } from 'react';
+import { Platform, StyleSheet, View, Dimensions, TouchableOpacity } from 'react-native';
+import { OtpInput } from 'react-native-otp-entry';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { navigate } from 'navigation/utils/navigationUtils';
+import { userStore } from 'state/user';
+import { RouteProp } from '@react-navigation/native';
+import { RootNavigatorParamList } from 'navigation/typings';
+import { useLogin, useForgotPassword } from 'services/src/auth';
+import { appStore } from 'state/app';
+import { userInfo } from 'state/user/typings';
 
 const styles = StyleSheet.create({
   container: {
@@ -66,77 +60,71 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'center',
   },
-})
+});
 
 interface Props {
-  route: RouteProp<RootNavigatorParamList, 'LoginPassword'>
+  route: RouteProp<RootNavigatorParamList, 'LoginPassword'>;
 }
 
 const LoginPassword = (props: Props) => {
-  const setLoading = appStore(state => state.setLoading)
-  const {triggerLogin} = useLogin()
-  const {triggerForgotPassword} = useForgotPassword()
-  const {phone} = props?.route?.params
-  const [error, setError] = useState<string>('')
-  const setToken = userStore(state => state.setToken)
-  const setUser = userStore(state => state.setUser)
+  const setLoading = appStore(state => state.setLoading);
+  const { triggerLogin } = useLogin();
+  const { triggerForgotPassword } = useForgotPassword();
+  const { phone } = props?.route?.params;
+  const [error, setError] = useState<string>('');
+  const setToken = userStore(state => state.setToken);
+  const setUser = userStore(state => state.setUser);
 
   const onChangePass = (text: string) => {
     if (text) {
-      setError('')
+      setError('');
     }
-  }
+  };
 
   const onFilledPass = async (_value: string) => {
     try {
-      setLoading(true)
-      const response = await triggerLogin({phone, password: _value})
+      setLoading(true);
+      const response = await triggerLogin({ phone, password: _value });
       if (response.type === 'success') {
-        setToken(response.data.token)
+        setToken(response.data.token);
         const newUser: userInfo = {
           id: response.data.user.id,
           fullName: response.data.user.fullName,
-        }
-        setUser(newUser)
+        };
+        setUser(newUser);
       }
-    } catch (err) {
-      console.log('err', err)
+    } catch (err: any) {
+      console.log('err', err);
       if (err?.data?.message === 'Invalid phone or password') {
-        setError('Mật khẩu không đúng. Vui lòng nhập lại mật khẩu')
-        return
+        setError('Mật khẩu không đúng. Vui lòng nhập lại mật khẩu');
+        return;
       } else if (err?.data?.message === 'User is not verified') {
-        setError(
-          'Tài khoản chưa được xác thực. Vui lòng ấn Quên mật khẩu để xác thực tài khoản',
-        )
-        return
+        setError('Tài khoản chưa được xác thực. Vui lòng ấn Quên mật khẩu để xác thực tài khoản');
+        return;
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const forgetPassword = async () => {
     try {
-      setLoading(true)
-      const response = await triggerForgotPassword({phone})
+      setLoading(true);
+      const response = await triggerForgotPassword({ phone });
       if (response?.type === 'success') {
-        navigate('Otp', {phone, userId: response.data.userId, isForget: true})
+        navigate('Otp', { phone, userId: response.data.userId, isForget: true });
       }
     } catch (err) {
-      console.error('Error fetching userId:', err)
+      console.error('Error fetching userId:', err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
       <Header />
-      <KeyboardAwareScrollView
-        keyboardShouldPersistTaps="handled"
-        enableOnAndroid={false}
-        enableAutomaticScroll={Platform.OS === 'ios'}
-        contentContainerStyle={styles.container}>
+      <KeyboardAwareScrollView keyboardShouldPersistTaps="handled" enableOnAndroid={false} enableAutomaticScroll={Platform.OS === 'ios'} contentContainerStyle={styles.container}>
         <View style={styles.content}>
           <CommonText text="Mật khẩu" styles={styles.desc} />
           <OtpInput
@@ -151,7 +139,7 @@ const LoginPassword = (props: Props) => {
                 ...styles.inputPass,
                 borderWidth: 0,
               },
-              pinCodeTextStyle: {...styles.textValuePass},
+              pinCodeTextStyle: { ...styles.textValuePass },
             }}
           />
           {error !== '' && <CommonText text={error} styles={styles.error} />}
@@ -162,7 +150,7 @@ const LoginPassword = (props: Props) => {
         </View>
       </KeyboardAwareScrollView>
     </View>
-  )
-}
+  );
+};
 
-export default LoginPassword
+export default LoginPassword;

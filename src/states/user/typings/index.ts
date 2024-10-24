@@ -4,4 +4,5 @@ export interface userInfo {
   id?: string;
   avatar?: string;
   newUser?: boolean;
+  isVerified?: boolean;
 }

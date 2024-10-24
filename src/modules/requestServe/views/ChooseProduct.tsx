@@ -349,7 +349,7 @@ const ChooseProduct = () => {
             </Animated.View>
 
             <View style={styles.ml2}>
-              <CommonText text="Giỏ hàng" styles={styles.totalPrice} />
+              <CommonText text="Đặt đơn" styles={styles.totalPrice} />
               {count !== 0 && (
                 <View style={styles.rowCount}>
                   <CommonText text={`${count}`} styles={styles.count} />

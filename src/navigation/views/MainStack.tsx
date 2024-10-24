@@ -45,6 +45,7 @@ const MainStack = () => {
             avatar: response.data.avatar,
             phone: response.data.phone,
             newUser: response.data.newUser,
+            isVerified: response.data.isVerified,
           };
           setUser(newUser);
         }

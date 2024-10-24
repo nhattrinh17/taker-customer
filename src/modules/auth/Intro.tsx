@@ -1,21 +1,14 @@
-import React, {useState} from 'react'
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-  SafeAreaView,
-} from 'react-native'
-import {Colors} from 'assets/Colors'
-import {Fonts} from 'assets/Fonts'
-import {Icons} from 'assets/icons'
-import CommonText from 'components/CommonText'
-import Banner from 'components/Banner'
-import {navigate} from 'navigation/utils/navigationUtils'
-import Modal from 'react-native-modal'
-import ModalWarning from 'components/ModalWarning'
-import Post from 'components/Post'
+import React, { useState } from 'react';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Platform, SafeAreaView } from 'react-native';
+import { Colors } from 'assets/Colors';
+import { Fonts } from 'assets/Fonts';
+import { Icons } from 'assets/icons';
+import CommonText from 'components/CommonText';
+import Banner from 'components/Banner';
+import { navigate } from 'navigation/utils/navigationUtils';
+import Modal from 'react-native-modal';
+import ModalWarning from 'components/ModalWarning';
+import Post from 'components/Post';
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -60,7 +53,7 @@ const styles = StyleSheet.create({
     shadowColor: Colors.border,
     borderColor: Colors.border,
     borderWidth: 1,
-    shadowOffset: {width: -2, height: 4},
+    shadowOffset: { width: -2, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
     flexDirection: 'row',
@@ -200,20 +193,20 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   // End 4 Functions menu
-})
+});
 
 const Intro = () => {
-  const [showModal, setShowModal] = useState<boolean>(false)
-  const [showModalWarning, setShowModalWarning] = useState<boolean>(true)
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [showModalWarning, setShowModalWarning] = useState<boolean>(true);
 
   const onBackdropPress = () => {
-    setShowModal(false)
-  }
+    setShowModal(false);
+  };
   const onPressContinue = () => {
-    setShowModal(true)
-  }
+    setShowModal(true);
+  };
 
-  const onCloseModalWarning = () => setShowModalWarning(false)
+  const onCloseModalWarning = () => setShowModalWarning(false);
 
   const actions = [
     {
@@ -241,41 +234,38 @@ const Intro = () => {
       title: 'Cửa hàng',
       onPress: () => onPressContinue(),
     },
-  ]
+  ];
   const renderActions = () => (
     <View style={styles.wrapperFuntions}>
       {actions.map((item, index) => (
-        <TouchableOpacity
-          key={`${index}`}
-          style={styles.item}
-          onPress={item.onPress}>
+        <TouchableOpacity key={`${index}`} style={styles.item} onPress={item.onPress}>
           {item?.icon}
           <CommonText text={item.title} styles={styles.label} />
         </TouchableOpacity>
       ))}
     </View>
-  )
+  );
 
   const renderRegister = () => (
     <View style={styles.wrapperRegister}>
       <TouchableOpacity
         style={styles.btnRegister}
         onPress={() => {
-          setShowModal(false)
-          navigate('Phone')
+          setShowModal(false);
+          navigate('AuthInfomation');
         }}>
         <CommonText text="Đăng ký" styles={styles.textRegister} />
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.btnLogin}
         onPress={() => {
-          setShowModal(false)
-          navigate('Phone')
+          setShowModal(false);
+          navigate('LoginV2');
         }}>
         <CommonText text="Đăng nhập" styles={styles.textLogin} />
       </TouchableOpacity>
     </View>
-  )
+  );
 
   const renderHeader = () => {
     return (
@@ -283,8 +273,8 @@ const Intro = () => {
         <Icons.LogoText />
         <CommonText text="VUA ĐÁNH GIÀY CÔNG NGHỆ" styles={styles.slogan} />
       </View>
-    )
-  }
+    );
+  };
 
   // const renderModalWarning = () => {
   //   return (
@@ -299,21 +289,15 @@ const Intro = () => {
 
   const renderModalLogin = () => {
     return (
-      <Modal
-        isVisible={showModal}
-        style={styles.modal}
-        onBackdropPress={onBackdropPress}>
+      <Modal isVisible={showModal} style={styles.modal} onBackdropPress={onBackdropPress}>
         <View style={styles.contentModal}>
           <CommonText text="Sử dụng Taker ngay!" styles={styles.titleModal} />
-          <CommonText
-            text="Chỉ sau một phút, bạn có thể truy cập vào các dịch vụ của chúng tôi, nhận ưu đãi và hơn thế nữa"
-            styles={styles.labelModal}
-          />
+          <CommonText text="Chỉ sau một phút, bạn có thể truy cập vào các dịch vụ của chúng tôi, nhận ưu đãi và hơn thế nữa" styles={styles.labelModal} />
           {renderRegister()}
         </View>
       </Modal>
-    )
-  }
+    );
+  };
 
   return (
     <>
@@ -324,14 +308,8 @@ const Intro = () => {
           <View style={styles.main}>
             <View style={styles.top}>
               <View>
-                <CommonText
-                  text="Bạn chưa có tài khoản Taker ?"
-                  styles={styles.topTitle}
-                />
-                <CommonText
-                  text="Đăng ký để hưởng các tiện ích!"
-                  styles={styles.topLabel}
-                />
+                <CommonText text="Bạn chưa có tài khoản Taker ?" styles={styles.topTitle} />
+                <CommonText text="Đăng ký để hưởng các tiện ích!" styles={styles.topLabel} />
               </View>
               <TouchableOpacity onPress={() => navigate('Phone')}>
                 <Icons.ArrowRight />
@@ -348,7 +326,7 @@ const Intro = () => {
       </ScrollView>
       <View style={styles.bottomRegister}>{renderRegister()}</View>
     </>
-  )
-}
+  );
+};
 
-export default Intro
+export default Intro;

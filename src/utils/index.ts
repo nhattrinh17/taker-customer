@@ -1,74 +1,74 @@
-import {StatusActivity} from 'modules/activity/typings'
-import Toast from 'react-native-toast-message'
+import { StatusActivity } from 'modules/activity/typings';
+import Toast from 'react-native-toast-message';
 
 export const showMessageError = (desc: string) => {
   Toast.show({
     type: 'error',
     text1: '',
     text2: desc,
-  })
-}
+  });
+};
 
 export const showMessageWarning = (desc: string) => {
   Toast.show({
     type: 'info',
     text1: '',
     text2: desc,
-  })
-}
+  });
+};
 
 export const showMessageSuccess = (desc: string) => {
   Toast.show({
     type: 'success',
     text1: '',
     text2: desc,
-  })
-}
+  });
+};
 
 export const renderStatusActivity = (status: string) => {
   switch (status) {
     case StatusActivity.SEARCHING:
     case StatusActivity.MEETING:
-      return 'Đang đặt'
+      return 'Đang đặt';
     case StatusActivity.ACCEPTED:
-      return 'Đã nhận đơn'
+      return 'Đã nhận đơn';
     case StatusActivity.INPROGRESS:
-      return 'Đang thực hiện'
+      return 'Đang thực hiện';
     case StatusActivity.CUSTOMER_CANCEL:
-      return 'Đã huỷ'
+      return 'Đã huỷ';
     case StatusActivity.NOT_FOUND:
-      return 'Không tìm thấy thợ đánh giày'
+      return 'Không tìm thấy thợ đánh giày';
     case StatusActivity.COMPLETED:
-      return 'Đã hoàn thành'
+      return 'Đã hoàn thành';
     default:
-      return ''
+      return '';
   }
-}
+};
 
 export function formatCurrency(amount: number): string {
   // Convert number to string and split it into integer and decimal parts
-  const parts = amount?.toFixed(0).split('.')
+  const parts = amount?.toFixed(0).split('.');
 
-  const integerPart = parts?.[0]?.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  const integerPart = parts?.[0]?.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
   // Combine integer and decimal parts and add the Vietnamese currency symbol
-  const formattedAmount = `${integerPart}`
+  const formattedAmount = `${integerPart}`;
 
-  return formattedAmount
+  return formattedAmount;
 }
 
 export const renderTypePayment = (paymentMethod: string) => {
   switch (paymentMethod) {
     case 'DIGITAL_WALLET':
-      return 'Ví Taker'
+      return 'Ví Taker';
     case 'OFFLINE_PAYMENT':
-      return 'Tiền mặt'
+      return 'Tiền mặt';
     case 'CREDIT_CARD':
-      return 'Qr Code/Thẻ Visa/Master/Nội địa'
+      return 'Qr Code/Thẻ Visa/Master/Nội địa';
     default:
-      return 'Tiền mặt'
+      return 'Tiền mặt';
   }
-}
+};
 
 // export const renderColorStatusOrder = (status: StatusUpdateOrder) => {
 //   switch (status) {
@@ -102,7 +102,7 @@ export const payments: serve.ItemPayment[] = [
     id: 4,
     key: 'OFFLINE_PAYMENT',
   },
-]
+];
 
 export const NOTIFICATIONS_SCREEN = {
   REQUEST_TRIP: 'REQUEST_TRIP',
@@ -110,4 +110,4 @@ export const NOTIFICATIONS_SCREEN = {
   CUSTOMER_CARE: 'CUSTOMER_CARE',
   WALLET: 'WALLET',
   DETAIL_NOTIFICATION: 'DETAIL_NOTIFICATION',
-}
+};
